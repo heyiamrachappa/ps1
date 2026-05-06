@@ -1,94 +1,87 @@
 # Audio Identification System - Technical Architecture
 
-This document details the architecture for **Zerograde's** audio identification system, designed to handle short, noisy, and incomplete audio clips.
+This document details the architecture for **Zerograde's** audio identification system, designed for high-performance matching of short, noisy audio clips.
 
 ## High-Level Architecture
 
 ```mermaid
 graph TD
-    A[Audio Input 3-10s] --> B[Preprocessing]
-    B --> C{Hybrid Feature Extractor}
+    A[Audio Input 3-10s] --> B[Normalization & Resampling]
+    B --> C[Mel-Spectrogram Generation]
     
     subgraph "Feature Extraction"
-    C --> D[Fingerprint Generator]
-    C --> E[Deep Embedding Model]
+    C --> D[2D Peak Detection]
+    D --> E[Landmark Hashing]
     end
     
-    D --> F[Hash Matcher]
-    E --> G[Vector Search Engine]
+    E --> F[Hash Matcher]
     
     subgraph "Storage Layer"
-    H[(Hash Database)]
-    I[(Vector Database)]
+    G[(SQLModel Database)]
+    H[(Pickle Hash Store)]
     end
     
     F <--> H
-    G <--> I
+    F --> I[Temporal Alignment Engine]
     
-    F --> J[Candidate Aggregator]
-    G --> J
-    
-    J --> K[Temporal Alignment & Scoring]
-    K --> L[Result: Song ID + Confidence]
+    I --> J[Candidate Scoring]
+    J --> K[Result: Song ID + Confidence]
 ```
 
 ## Core Components
 
 ### 1. Preprocessing Pipeline
-To ensure robustness against noise and distortion:
-- **Normalization**: Downsample to 22,050 Hz and convert to mono.
-- **Denoising**: Apply **Spectral Subtraction** to remove background white noise.
-- **VAD (Voice Activity Detection)**: Filter out silent or non-audio segments to focus on actual musical content.
+To ensure consistency across various audio sources:
+- **Resampling**: All audio is downsampled to 22,050 Hz.
+- **Normalization**: Volume is normalized to standard peak levels using `librosa.util.normalize`.
+- **Mono Conversion**: Multichannel audio is collapsed to a single channel.
 
-### 2. Fingerprint Generator (Precision)
-- **Algorithm**: Modified Landmark-based hashing.
-- **Process**:
-    1. Generate a **Spectrogram** using STFT.
-    2. Identify **Local Peaks** (constellations) in frequency-time space.
-    3. Pair peaks with a target zone to create **unique hashes**.
-- **Strength**: Extremely resistant to additive noise and low-bitrate compression.
+### 2. Mel-Spectrogram & Peak Detection
+Instead of raw FFT bins, the system uses **Mel-Frequency Banding** (128 mels). This provides:
+- **Robustness**: Mel-bands are more resilient to small frequency shifts and noise.
+- **Efficiency**: Reduces the dimensionality of the spectral data while preserving musical features.
+- **2D Peaks**: A maximum filter identifies local energy peaks (constellations) in the frequency-time space.
 
-### 3. Deep Embedding Model (Robustness)
-- **Model**: Pre-trained **VGGish** or **Audio Spectrogram Transformer (AST)**.
-- **Process**: Map 960ms windows of audio into a 128-dimensional latent space.
-- **Strength**: Handles pitch shifts, speed variations, and severe distortions that might break exact hash matching.
+### 3. Landmark Hashing (Precision)
+- **Algorithm**: Pairs identified peaks within a "fan-out" zone.
+- **Hash Structure**: `(freq1, freq2, delta_time)` associated with an absolute `offset_time`.
+- **Strength**: Landmarks are extremely resistant to additive noise because they focus on dominant spectral energy.
 
 ### 4. Storage & Retrieval
-- **Hash Database (Redis/PostgreSQL)**: Stores hashes as keys for $O(1)$ lookup.
-- **Vector DB (FAISS/ChromaDB)**: Uses HNSW (Hierarchical Navigable Small World) indexing for sub-millisecond similarity search across thousands of embeddings.
+- **Metadata (SQLite)**: Stores song details (title, artist, genre) using `SQLModel`.
+- **Fingerprint Store (Pickle)**: A persistent `defaultdict` maps hashes to lists of `(song_id, offset)`. This provides $O(1)$ lookup time for query hashes.
 
-### 5. Scoring & Confidence
-The final score is calculated as:
-$$Confidence = \alpha \cdot (\text{Fingerprint Match Count}) + \beta \cdot (1 - \text{Cosine Distance})$$
-Temporal alignment ensures that matches occur in a linear sequence, filtering out false positives.
+### 5. Temporal Alignment & Scoring
+This is the "secret sauce" for high accuracy:
+- **Consistent Offsets**: For each candidate song, the engine calculates the difference between the database offset and the query offset ($D = S_{offset} - Q_{offset}$).
+- **Histogram Density**: A true match will have a high concentration of identical $D$ values (the "offset alignment").
+- **Confidence**: Calculated based on the density of the most frequent offset relative to the total number of hashes in the query.
 
 ## Project Structure
 ```text
-ps1/
-├── app/
-│   ├── api/            # API Endpoints (main.py routes)
-│   ├── core/           # Core Logic (features.py, matching)
-│   ├── data/           # Storage Logic (store.py)
-│   ├── models/         # Data Schemas (song.py)
-│   └── utils/          # Metrics & Utilities (metrics.py)
-├── data/
-│   ├── raw/            # Place original audio files here
-│   └── audio_id.db     # SQLite Database (Metadata)
-├── main.py             # Entry point (FastAPI)
-├── index_dataset.py    # Batch processing script
-└── evaluate_accuracy.py # Metrics script
+/
+├── docs/                   # Documentation Side
+│   ├── technical_overview.md
+│   ├── architecture.md
+│   └── ISSUES.md
+├── src/                    # Development Side
+│   ├── app/                # Core logic (models, features, store)
+│   ├── static/             # Frontend assets
+│   ├── data/               # Raw audio & fingerprints.pkl
+│   ├── main.py             # FastAPI Entry point
+│   ├── index_dataset.py    # Batch indexing script
+│   ├── evaluate_accuracy.py# Metrics script
+│   └── generate_metadata.py# Metadata generation script
+├── audio_id.db             # SQLite Database
+└── pyproject.toml          # Project configuration
 ```
 
 ## Detailed Data Flow
-1. **Ingestion**: `MetadataIngestor` parses CSV data into SQLite using `SQLModel`.
-2. **Indexing**: `index_dataset.py` iterates through audio files, extracts spectral peaks, generates hashes, and saves them to a persistent `fingerprints.pkl`.
-3. **Querying**: 
-    - Incoming audio is saved to a temporary location.
-    - `BaselineFingerprinter` extracts peaks from the 3-10s clip.
-    - `MatchingEngine` queries the `FingerprintStore` for each hash.
-    - **Temporal Alignment**: For each candidate song, we check if the difference between the query offset and database offset is consistent ($S_{offset} - Q_{offset} = \text{constant}$).
-    - **Confidence**: The highest density of consistent offsets determines the match and confidence score.
-4. **Monitoring**: `LatencyTracker` logs processing time, and `/health` provides system status.
-
-## Concurrency & Performance
-The system utilizes `FastAPI`'s asynchronous nature and `uvicorn`'s worker model to handle concurrent queries. The `FingerprintStore` uses an in-memory `defaultdict` for $O(1)$ lookups, ensuring sub-second response times even as the dataset grows.
+1. **Ingestion**: `generate_metadata.py` scans audio folders and creates a `metadata.csv`.
+2. **Database Setup**: `main.py` (via `/ingest` endpoint) populates the SQLite database with song metadata.
+3. **Indexing**: `index_dataset.py` processes raw audio files, extracts landmarks, and builds the `fingerprints.pkl` index.
+4. **Querying**: 
+    - `main.py` receives a query file.
+    - `BaselineFingerprinter` extracts landmarks from the clip.
+    - `MatchingEngine` performs temporal alignment against the index.
+5. **Monitoring**: `LatencyTracker` logs performance metrics.
