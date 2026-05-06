@@ -1,0 +1,19 @@
+[project]
+name = "zerograde-audio-id"
+version = "0.1.0"
+description = "High-performance audio identification system for Zerograde Team"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "librosa",
+    "numpy",
+    "scipy",
+    "sqlmodel",
+    "faiss-cpu",
+    "pydub",
+    "python-multipart",
+    "pandas"
+]
+
+[tool.setuptools]
+packages = ["app"]

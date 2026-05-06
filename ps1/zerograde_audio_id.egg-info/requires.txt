@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+librosa
+numpy
+scipy
+sqlmodel
+faiss-cpu
+pydub
+python-multipart
+pandas

@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: zerograde-audio-id
+Version: 0.1.0
+Summary: High-performance audio identification system for Zerograde Team
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]
+Requires-Dist: librosa
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: sqlmodel
+Requires-Dist: faiss-cpu
+Requires-Dist: pydub
+Requires-Dist: python-multipart
+Requires-Dist: pandas
