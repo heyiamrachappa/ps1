@@ -1,17 +1,31 @@
-# Audio Identification & Source Detection System
+# Zerograde Audio Identification System
 
-## Team Information
-- **Team Name**: [Team Name]
-- **Year**: [Year]
-- **All-Female Team**: [Yes/No]
+Welcome to the Zerograde Audio ID project. This repository has been reorganized for better clarity.
 
-## Architecture Overview
+## Project Structure
 
-#### Describe your approach here. Keep it short and clear.
+- **[docs/](./docs/)**: Contains all project documentation.
+  - [Technical Overview](./docs/technical_overview.md): Core architecture and team info.
+  - [Architecture Details](./docs/architecture.md): Deep dive into the hybrid feature extraction.
+  - [Issue Tracking](./docs/ISSUES.md): Historical and current project issues.
+- **[src/](./src/)**: Contains all development source code and runtime data.
+  - `app/`: Core logic (models, features, data store).
+  - `main.py`: The FastAPI application entry point.
+  - `data/`: Raw audio and fingerprint storage.
+  - `static/`: Frontend assets.
 
-    - [How does your system efficiently extract and store features (e.g., fingerprints, spectrograms) from the audio dataset?]
-    - [What matching algorithm or technique do you use to compare noisy/partial query snippets against the database?]
-    - [How does your architecture handle scalability to support a few thousand songs and concurrent queries?]
-    - [What mechanisms are in place to ensure low latency and high accuracy despite noise or distortion in the input queries?]
+## Quick Start
 
-**Note:** Please do not change the format or spelling of anything in this README. The fields are extracted using a script, so any changes to the structure or formatting may break the extraction process.
+### 1. Installation
+```bash
+pip install -e .
+```
+
+### 2. Running the Application
+From the project root:
+```bash
+python src/main.py
+```
+
+### 3. Documentation
+For detailed setup and execution instructions, please refer to the [Technical Overview](./docs/technical_overview.md).
