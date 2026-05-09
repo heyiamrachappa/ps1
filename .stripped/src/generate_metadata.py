@@ -1,7 +1,7 @@
 import os 
 import pandas as pd 
 
-def generate_metadata (data_dir :str ): 
+def generate_metadata (data_dir :str ):
     rows =[]
 
     for genre in os .listdir (data_dir ):

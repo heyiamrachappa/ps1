@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zerograde | Audio ID</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main class="container">
+        <header>
+            <div class="logo">
+                <span class="logo-text">ZEROGRADE</span>
+                <span class="logo-badge">PRO</span>
+            </div>
+            <h1>Identify Any Sound</h1>
+            <p>Listen, identify, and discover music instantly with our high-performance fingerprinting engine.</p>
+        </header>
+
+        <section class="identifier-card">
+            <div class="visualizer-container">
+                <div class="pulse-ring"></div>
+                <button id="recordBtn" class="record-btn">
+                    <div class="mic-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </div>
+                </button>
+                <div id="statusLabel" class="status-label">Tap to Start Listening</div>
+            </div>
+
+            <div id="resultCard" class="result-card hidden">
+                <div class="result-info">
+                    <h2 id="songTitle">Song Title</h2>
+                    <p id="songArtist">Artist Name</p>
+                    <div class="badge-row">
+                        <span id="confidenceBadge" class="badge">98% Confidence</span>
+                        <span id="latencyBadge" class="badge secondary">120ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loadingIndicator" class="loading-indicator hidden">
+                <div class="spinner"></div>
+                <p>Analyzing Audio...</p>
+            </div>
+        </section>
+
+        <footer>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-value">590+</span>
+                    <span class="stat-label">Songs Indexed</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-value">&lt; 500ms</span>
+                    <span class="stat-label">Avg. Latency</span>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

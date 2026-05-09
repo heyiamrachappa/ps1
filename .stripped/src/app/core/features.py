@@ -52,7 +52,7 @@ def generate_hashes (peaks ,fan_value =15 ):
     peaks =peaks [peaks [:,1 ].argsort ()]
 
     for i in range (len (peaks )):
-        for j in range (1 ,fan_value ): 
+        for j in range (1 ,fan_value ):
             if (i +j )<len (peaks ):
                 f1 ,t1 =peaks [i ]
                 f2 ,t2 =peaks [i +j ]

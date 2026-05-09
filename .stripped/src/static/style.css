@@ -27,6 +27,7 @@ body {
     align-items: center;
 }
 
+
 .background-blobs {
     position: fixed;
     top: 0;
@@ -126,6 +127,7 @@ p {
     line-height: 1.6;
 }
 
+
 .identifier-card {
     background: var(--surface);
     backdrop-filter: blur(12px);
@@ -185,6 +187,7 @@ p {
     font-weight: 600;
     color: var(--text-dim);
 }
+
 
 .result-card {
     background: rgba(255, 255, 255, 0.05);

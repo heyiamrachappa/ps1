@@ -23,6 +23,7 @@ async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         
+        
         const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
         mediaRecorder = new MediaRecorder(stream, { mimeType });
         audioChunks = [];
@@ -84,6 +85,7 @@ async function sendAudioToServer() {
 function displayResult(data) {
     if (data.result && data.result.best_match) {
         const fullPath = data.result.best_match;
+        
         const parts = fullPath.split('/');
         const fileName = parts[parts.length - 1].replace('.wav', '');
         

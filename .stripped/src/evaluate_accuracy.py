@@ -3,7 +3,7 @@ import requests
 import os 
 import json 
 
-def run_evaluation (test_dir :str ,ground_truth :dict ): 
+def run_evaluation (test_dir :str ,ground_truth :dict ):
     """Issue 14: Evaluate accuracy against a test set"""
     evaluator =AccuracyEvaluator ()
     url ="http://localhost:8000/identify"
@@ -30,5 +30,6 @@ def run_evaluation (test_dir :str ,ground_truth :dict ):
     print (json .dumps (report ,indent =2 ))
 
 if __name__ =="__main__":
+
 
     print ("Please ensure the FastAPI server is running before executing evaluation.")
